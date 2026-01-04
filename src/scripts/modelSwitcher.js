@@ -106,7 +106,7 @@ ModelSwitcher.prototype._loadModelFromUrl = function (url, done) {
         return;
     }
 
-    var asset = new pc.Asset(cacheName, 'model', { url: url });
+    var asset = new pc.Asset(cacheName, 'model', { url: url, crossOrigin: 'anonymous' });
 
     asset.on('load', function () { done(asset); });
     asset.on('error', function (e) {

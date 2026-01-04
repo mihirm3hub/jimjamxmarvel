@@ -77,7 +77,7 @@ WeaponImageSwitcher.prototype._loadTexture = function (url, done) {
         return;
     }
 
-    var asset = new pc.Asset(name, 'texture', { url: url });
+    var asset = new pc.Asset(name, 'texture', { url: url, crossOrigin: 'anonymous' });
 
     asset.on('load', function () { done(asset); });
     asset.on('error', function (err) {

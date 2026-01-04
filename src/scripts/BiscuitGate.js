@@ -35,9 +35,9 @@ BiscuitGate.prototype.initialize = function () {
   // --- Find pipeline (you MUST adjust findByName to your camera entity name) ---
   // Try common camera entity names
   const camEnt =
-      this.app.root.findByName("Camera") ||
-      this.app.root.findByName("Main Camera") ||
-      this.app.root.findByName("AR Camera");
+    this.app.root.findByName("Camera") ||
+    this.app.root.findByName("Main Camera") ||
+    this.app.root.findByName("AR Camera");
 
   if (!camEnt || !camEnt.script || !camEnt.script.zapparCamera) {
     console.error("[BiscuitGate] Can't find zapparCamera script on camera entity. Fix entity name lookup.");
@@ -194,8 +194,8 @@ BiscuitGate.prototype._setupDownsampleFbo = function () {
   this._vb = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this._vb);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    -1,-1,  1,-1, -1, 1,
-    -1, 1,  1,-1,  1, 1
+    -1, -1, 1, -1, -1, 1,
+    -1, 1, 1, -1, 1, 1
   ]), gl.STATIC_DRAW);
 
   this._rgba = new Uint8Array(this._w * this._h * 4);
@@ -256,88 +256,20 @@ BiscuitGate.prototype._renderTexToSmallRgba = function (cameraGlTex) {
 
 // ---------- Worker ----------
 BiscuitGate.prototype._makeWorker = function () {
-  const src = `
-    let session=null, inputName=null, outputName=null;
-    let W=224,H=224,HW=224*224;
-    let inputBuf=null, inputTensor=null;
+  // Worker path is relative to index.html
+  // If index.html is served from /, this resolves to /workers/biscuit_infer.worker.js
+  const workerUrl = "workers/biscuit_infer.worker.js";
 
-    function softmax2(a,b){
-      const m = a>b?a:b;
-      const ea = Math.exp(a-m), eb = Math.exp(b-m);
-      const s = ea+eb;
-      return [ea/s, eb/s];
+  try {
+    if (msg.type === "pong") {
+      console.log("[BiscuitGate] Worker pong received");
     }
 
-    async function init({ortCdn, wasmPaths, modelUrl, inputW, inputH}){
-      W=inputW; H=inputH; HW=W*H;
+    return new Worker(workerUrl);
+  } catch (e) {
+    console.error("[BiscuitGate] Failed to create Worker:", workerUrl, e);
+    throw e;
+  }
 
-      importScripts(ortCdn);
-      self.ort.env.wasm.wasmPaths = wasmPaths;
-      self.ort.env.wasm.simd = true;
-      self.ort.env.wasm.numThreads = 1;
-
-      inputBuf = new Float32Array(3*HW);
-      inputTensor = new self.ort.Tensor("float32", inputBuf, [1,3,H,W]);
-
-      session = await self.ort.InferenceSession.create(modelUrl, {
-        executionProviders:["wasm"],
-        graphOptimizationLevel:"all"
-      });
-      inputName = session.inputNames[0];
-      outputName = session.outputNames[0];
-
-      postMessage({type:"ready"});
-    }
-
-    function rgbaToCHWFloat(rgba){
-      const inv255 = 1/255;
-      const m0=0.485, s0=0.229;
-      const m1=0.456, s1=0.224;
-      const m2=0.406, s2=0.225;
-
-      let p=0;
-      for (let i=0; i<rgba.length; i+=4){
-        const r = rgba[i]*inv255;
-        const g = rgba[i+1]*inv255;
-        const b = rgba[i+2]*inv255;
-
-        inputBuf[p]      = (r-m0)/s0;
-        inputBuf[p+HW]   = (g-m1)/s1;
-        inputBuf[p+2*HW] = (b-m2)/s2;
-        p++;
-      }
-    }
-
-    async function predictFromRgba(rgba){
-      if (!session) return;
-
-      rgbaToCHWFloat(rgba);
-
-      const feeds = {};
-      feeds[inputName] = inputTensor;
-      const out = await session.run(feeds);
-      const logits = out[outputName].data;
-
-      const probs = softmax2(logits[0], logits[1]);
-      const clsIdx = probs[1] > probs[0] ? 1 : 0;
-      const prob = probs[clsIdx];
-
-      postMessage({type:"pred", clsIdx, prob});
-    }
-
-    onmessage = (ev) => {
-      const msg = ev.data;
-      if (msg.type === "init") {
-        init(msg).catch(e => postMessage({type:"error", error:String(e && e.message ? e.message : e)}));
-      } else if (msg.type === "rgba") {
-        const rgba = msg.rgba;
-        predictFromRgba(rgba)
-          .catch(e => postMessage({type:"error", error:String(e && e.message ? e.message : e)}));
-      }
-    };
-  `;
-  const url = URL.createObjectURL(new Blob([src], {type:"application/javascript"}));
-  const w = new Worker(url);
-  URL.revokeObjectURL(url);
-  return w;
 };
+

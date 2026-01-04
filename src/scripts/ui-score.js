@@ -107,7 +107,7 @@ UiScore.prototype._loadTextureAssetFromUrl = function (url, done) {
     }
 
     console.log('[UiScore] Loading texture asset:', url);
-    var asset = new pc.Asset(cacheName, 'texture', { url: url });
+    var asset = new pc.Asset(cacheName, 'texture', { url: url, crossOrigin: 'anonymous' });
 
     asset.on('load', function () {
         console.log('[UiScore] ✅ Texture asset loaded:', url);
