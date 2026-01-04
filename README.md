@@ -1,9 +1,7 @@
-# Jim Jam × Marvel — WebAR Biscuit Detector  
+# Jim Jam × Marvel 
 **Real-time in-browser computer vision using ONNX Runtime Web, Web Workers, and AWS CloudFront**
 
 This project is a production-style WebAR mini-game that performs real-time biscuit detection directly in the browser. Inference runs via ONNX Runtime Web (WASM) inside a Web Worker, keeping rendering and UI responsive. The trained model is delivered via AWS S3 and CloudFront for fast, globally cached loading.
-
-No backend inference. No server-side vision. Everything runs client-side.
 
 ---
 
@@ -13,8 +11,6 @@ No backend inference. No server-side vision. Everything runs client-side.
 - CDN-hosted ONNX model with predictable load performance
 - WebAR camera integration feeding live frames into a CV pipeline
 - Designed and shipped as a static, deployable web application
-
-This reflects real constraints of shipping computer vision on the web.
 
 ---
 
@@ -46,26 +42,32 @@ Core logic lives in src/scripts/BiscuitGate.js
 web/                # Deployable PlayCanvas build (static site)  
 src/scripts/        # Non-minified, readable game + CV logic  
 infra/terraform/    # Minimal AWS S3 + CloudFront setup  
-docs/               # Technical notes and implementation details  
-
-The repository separates source logic from deployable output, mirroring real production workflows.
 
 ---
 
 ## Running locally
 This is a static web application and must be served over HTTP.
 
-### Option 1: Node
+### Option 1: VS Code
+``` 
+- install live server extention on VS Code
+- Open index.html
+- Right-click open with live server 
+```
+
+### Option 2: Node
+```
 npm install  
 npm run start  
 
 Open http://localhost:8080
-
-### Option 2: Python
+```
+### Option 3: Python
+```
 python -m http.server 8000  
 
 Open http://localhost:8000
-
+```
 Camera access on mobile devices requires HTTPS. For real device testing, deploy to an HTTPS endpoint such as CloudFront, Vercel, or Netlify.
 
 ---
@@ -96,4 +98,3 @@ To fork or reuse this project, host your own ONNX model on S3 and CloudFront or 
 
 ## Author
 Mihir Mainkar  
-Computer Vision · WebAR · Applied ML Engineering
