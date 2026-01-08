@@ -1,7 +1,9 @@
 # ONNX Web Inference Pipeline  
 **Client-side computer vision using ONNX Runtime Web, Web Workers, and AWS CloudFront**
 
-This repository implements a production-style, client-side computer vision inference pipeline that runs entirely in the browser. Inference is executed via ONNX Runtime Web (WASM) inside a Web Worker, keeping the main render thread responsive. The trained ONNX model is delivered via AWS S3 and CloudFront for predictable, low-latency loading. This pipeline was originally shipped as part of a Jim Jam × Marvel WebAR campaign, where it powered real-time biscuit detection during gameplay. Campaign-specific branding has been intentionally decoupled from the core engineering so the system remains reusable and transferable.
+This repository implements a client-side computer vision inference pipeline that runs entirely in the browser. Inference is executed via ONNX Runtime Web (WASM) inside a Web Worker, keeping the main render thread responsive. 
+
+The trained ONNX model is delivered via AWS S3 and CloudFront for predictable, low-latency loading. This pipeline was originally shipped as part of a **Jim Jam × Marvel campaign** , where it powered real-time biscuit detection during gameplay. Campaign-specific branding has been intentionally decoupled from the core engineering so the system remains reusable and transferable.
 
 ## Why this project stands out
 - End-to-end computer vision pipeline running fully client-side
@@ -26,18 +28,48 @@ This repository implements a production-style, client-side computer vision infer
 5. Worker loads ONNX Runtime Web and executes inference
 6. Main thread receives `{ class, probability }`
 7. Application logic is gated based on model output  
+
 Core logic lives in `src/scripts/BiscuitGate.js`.
 
 ## Project structure
+```
 web/                # Deployable static build  
 src/scripts/        # Non-minified, readable CV + inference logic  
 infra/terraform/    # Minimal AWS S3 + CloudFront setup  
 
+```
 ## Running locally
-This is a static web application and must be served over HTTP. Option 1: VS Code — install the Live Server extension, open `index.html`, right-click and select “Open with Live Server”. Option 2: Node — run `npm install` then `npm run start` and open http://localhost:8080. Option 3: Python — run `python -m http.server 8000` and open http://localhost:8000. Camera access on mobile devices requires HTTPS; for real-device testing, deploy to an HTTPS endpoint such as CloudFront, Vercel, or Netlify.
+This is a static web application and must be served over HTTP. 
+
+Option 1: VS Code 
+```
+install the Live Server extension
+open `index.html`
+right-click and select “Open with Live Server” 
+```
+Option 2: Node 
+```
+npm install
+npm run start
+
+// open http://localhost:8080. 
+```
+Option 3: Python 
+```
+python -m http.server 8000 
+
+// open http://localhost:8000. 
+```
+Camera access on mobile devices requires HTTPS; for real-device testing, deploy to an HTTPS endpoint such as CloudFront, Vercel, or Netlify.
 
 ## Model hosting
-The ONNX model is currently loaded from CloudFront at https://d3lnwbvoiab3gu.cloudfront.net/jimjam_fp16_2_classes.onnx. To fork or reuse this pipeline, host your own ONNX model on S3 and CloudFront or place the model inside `web/` and update `ONNX_MODEL_PATH` in `BiscuitGate.js`.
+The ONNX model is currently loaded from CloudFront at 
+
+`
+https://d3lnwbvoiab3gu.cloudfront.net/jimjam_fp16_2_classes.onnx. 
+`
+
+To fork or reuse this pipeline, host your own ONNX model on S3 and CloudFront or place the model inside `web/` and update `ONNX_MODEL_PATH` in `BiscuitGate.js`.
 
 ## Engineering considerations
 - Inference runs entirely off the main thread to preserve frame rate
@@ -53,4 +85,3 @@ The ONNX model is currently loaded from CloudFront at https://d3lnwbvoiab3gu.clo
 
 ## Author
 Mihir Mainkar  
-Computer Vision · Client-Side ML · Immersive Systems Engineering
